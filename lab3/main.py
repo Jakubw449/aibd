@@ -31,7 +31,7 @@ def film_in_category(category_id:int)->pd.DataFrame:
     pd.DataFrame: DataFrame zawierający wyniki zapytania
     '''
     if isinstance(category_id, int):
-        return pd.read_sql(f'''SELECT film.title, language.name as language, category.name as category\
+        return pd.read_sql(f'''SELECT film.title, language.name as languge, category.name as category\
                             FROM film\
                         INNER JOIN language  ON language.language_id = film.language_id\
                     INNER JOIN film_category ON film_category.film_id = film.film_id\
@@ -81,7 +81,7 @@ def number_film_by_length(min_length: Union[int,float] = 0, max_length: Union[in
     Returns:
     pd.DataFrame: DataFrame zawierający wyniki zapytania
     '''
-    if isinstance(min_length, int) and isinstance(max_length, int):
+    if isinstance(min_length, (int, float)) and isinstance(max_length, (int,float)) and max_length > min_length:
         return pd.read_sql(f'''SELECT length, count(title)\
             FROM film\
             WHERE length BETWEEN {min_length} and {max_length}\
@@ -108,7 +108,7 @@ def client_from_city(city:str)->pd.DataFrame:
     if isinstance(city, str):
         return pd.read_sql(f"""SELECT city.city, customer.first_name, customer.last_name\
                             FROM customer\
-                        INNER JOIN address ON address.address_id = customer.customer_id\
+                        INNER JOIN address ON address.address_id = customer.address_id\
                     INNER JOIN city ON city.city_id = address.city_id\
                     WHERE city.city = '{city}'""", con=connection_sqlalchemy)
     else:
@@ -131,9 +131,9 @@ def avg_amount_by_length(length:Union[int,float])->pd.DataFrame:
     '''
     if isinstance(length, int) or isinstance(length, float):
         return pd.read_sql(f"""SELECT length, avg(amount) FROM film\
-        INNER JOIN Inventory on inventory.film_id = film.film_id\
+        INNER JOIN inventory on inventory.film_id = film.film_id\
         INNER JOIN rental on rental.inventory_id = inventory.inventory_id\
-        INNER JOIN payment on payment.customer_id = rental.customer_id\
+        INNER JOIN payment on payment.rental_id = rental.rental_id\
         WHERE length = {length} GROUP BY length""", con=connection_sqlalchemy)
     else:
         return None
@@ -154,14 +154,14 @@ def client_by_sum_length(sum_min:Union[int,float])->pd.DataFrame:
     Returns:
     pd.DataFrame: DataFrame zawierający wyniki zapytania
     '''
-    if isinstance(sum_min, int) or isinstance(sum_min, float):
+    if isinstance(sum_min, (int, float)) and sum_min > 0:
         return pd.read_sql(f"""SELECT customer.first_name, customer.last_name, sum(film.length)  FROM film\
         INNER JOIN inventory on inventory.film_id = film.film_id\
         INNER JOIN rental on rental.inventory_id = inventory.inventory_id\
         INNER JOIN customer on customer.customer_id = rental.customer_id\
         GROUP BY customer.first_name, customer.last_name
         HAVING sum(film.length) > {sum_min}
-        ORDER BY sum(film.length), customer.first_name, customer.last_name""", con=connection_sqlalchemy)
+        ORDER BY sum(film.length), customer.last_name, customer.first_name""", con=connection_sqlalchemy)
     else:
         return None  
 
@@ -181,7 +181,7 @@ def category_statistic_length(name:str)->pd.DataFrame:
     pd.DataFrame: DataFrame zawierający wyniki zapytania
     '''
     if isinstance(name, str):
-        return pd.read_sql(f"""SELECT category.name, avg(film.length), sum(film.length), min(film.length), max(film.length) FROM category\
+        return pd.read_sql(f"""SELECT category.name as category, avg(film.length), sum(film.length), min(film.length), max(film.length) FROM category\
             INNER JOIN film_category on film_category.category_id = category.category_id\
             INNER JOIN film on film.film_id = film_category.film_id\
             WHERE category.name = '{name}'\
