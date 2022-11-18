@@ -5,7 +5,11 @@ The Metadata Guide
 https://github.com/KAIR-ISZ/public_lectures/blob/master/Analiza%20i%20Bazy%20Danych%202021/Lab%202/Datasets/weather.txt
 
 - variables:
+
+
 1)df - original DataFrame
+
+
 2)new_df - clean DataFrame to put values from original DataFrame 
 
 - Information to understand my coding process:
