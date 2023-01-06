@@ -1,0 +1,10 @@
+1) 19091
+2) 2102
+3) 8175032
+4) 5201602
+5)
+queens - 30
+brooklyn - 23
+staten island - 24
+the bronx - 24
+manhattan - 28
